@@ -1,4 +1,4 @@
-import pandas as pd
+import pandas as df
 from typing import List, Dict
 
 class ExcelReader:
@@ -10,7 +10,7 @@ class ExcelReader:
         """Lee los datos de los equipos desde la hoja de cálculo."""
         try:
             # Lee el archivo Excel directamente en un DataFrame de pandas
-            self.data = pd.read_excel(self.file_path)
+            self.data = df.read_excel(self.file_path)
             
             # Convierte el DataFrame a una lista de diccionarios
             equipment_data = self.data.to_dict('records')

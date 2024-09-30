@@ -1,6 +1,7 @@
 from ExcelReader import ExcelReader
 from RouterManager import RouterManager
 from librouteros.exceptions import TrapError
+import pandas as pd
 
 class NewUsers:
     def __init__(self, router_manager: RouterManager, excel_file: str):
@@ -23,7 +24,13 @@ class NewUsers:
         for user in self.users_data:
             username = user.get('Username')
             password = user.get('Password')
-            group = user.get('Group', 'full')  # 'full' como grupo por defecto si no se especifica
+            group = user.get('Group')
+            
+            # Validar si el campo de grupo está vacío
+            if pd.isna(group) or group == "" or group is None:
+                group = 'read'  # Asignar 'read' como grupo por defecto si está vacío
+            
+            print(f"Procesando usuario: {username}, Grupo: {group}")
 
             if not username or not password:
                 print(f"Datos de usuario incompletos: {user}")
@@ -36,7 +43,7 @@ class NewUsers:
                     password=password,
                     group=group
                 )
-                print(f"Usuario '{username}' creado exitosamente.")
+                print(f"Usuario '{username}' creado exitosamente en el grupo '{group}'.")
             except TrapError as e:
                 print(f"Error al crear el usuario '{username}': {e}")
             except Exception as e:
@@ -49,10 +56,12 @@ class NewUsers:
 
 # Ejemplo de uso
 if __name__ == "__main__":
-    router_ip = "192.168.1.1"
-    username = "admin"
-    password = "password"
-    port = 8728
+    
+    router_ip = "192.168.240.134"  # Cambia esto por la IP de tu equipo MikroTik
+    username = "admin"         # Cambia esto por tu usuario
+    password = "admin"              # Cambia esto por tu contraseña
+    port = 4444                # Puerto API por defecto, cambia si es necesario
+
     excel_file = "nuevos_usuarios.xlsx"
 
     router_manager = RouterManager(router_ip, username, password, port)
