@@ -18,6 +18,9 @@ class ExcelReader:
             # Filtra las filas que tienen todos los valores
             equipment_data = [eq for eq in equipment_data if all(eq.values())]
             
+            # Elimina columnas con nombres vacíos
+            columns = [col for col in list(equipment_data[0].keys()) if col.strip()]
+            
             return equipment_data
         except Exception as e:
             print(f"Error al leer el archivo Excel: {e}")
