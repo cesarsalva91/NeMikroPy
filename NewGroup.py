@@ -28,9 +28,15 @@ class NewGroup:
             return False
 
         try:
+            # Verificar si el grupo ya existe
+            existing_groups = self.router_manager.api.path('user', 'group')
+            if any(group['name'] == self.group_name for group in existing_groups):
+                print(f"El grupo '{self.group_name}' ya existe.")
+                return False
+
             # Crear el grupo
             group_params = {'name': self.group_name, **self.attributes}
-            self.router_manager.api.path('user', 'group').add(**group_params)
+            existing_groups.add(**group_params)
             print(f"Grupo '{self.group_name}' creado exitosamente.")
             return True
         except TrapError as e:
@@ -45,7 +51,7 @@ class NewGroup:
 
 # Ejemplo de uso
 if __name__ == "__main__":
-    router_ip = "192.168.240.133"
+    router_ip = "192.168.240.134"
     username = "admin"
     password = "admin"
     port = 4444
