@@ -1,7 +1,8 @@
 import tkinter as tk
-from tkinter import filedialog, ttk
+from tkinter import filedialog, ttk, messagebox
 from tkinter import font as tkfont
 from ExcelReader import ExcelReader
+from RouterManager import RouterManager
 
 class ExcelGUI:
     def __init__(self, master):
@@ -10,6 +11,7 @@ class ExcelGUI:
         self.master.geometry("800x600")
 
         self.excel_reader = None
+        self.equipment_data = None
 
         # Estilo para el Treeview
         self.style = ttk.Style()
@@ -27,6 +29,11 @@ class ExcelGUI:
         self.select_button = ttk.Button(self.main_frame, text="Seleccionar archivo Excel", 
                                         command=self.select_file)
         self.select_button.pack(pady=10)
+
+        # Botón para obtener información de los equipos
+        self.get_info_button = ttk.Button(self.main_frame, text="Obtener información de equipos", 
+                                          command=self.get_equipment_info, state=tk.DISABLED)
+        self.get_info_button.pack(pady=10)
 
         # Frame para el Treeview (inicialmente vacío)
         self.tree_frame = None
@@ -67,10 +74,11 @@ class ExcelGUI:
         self.tree_frame.grid_columnconfigure(0, weight=1)
 
         # Cargar nuevos datos
-        data = self.excel_reader.read_equipment_data()
-        if data:
+        self.equipment_data = self.excel_reader.read_equipment_data()
+        
+        if self.equipment_data:
             # Configurar columnas
-            columns = list(data[0].keys())
+            columns = list(self.equipment_data[0].keys())
             self.tree["columns"] = columns
             self.tree["show"] = "headings"
             for col in columns:
@@ -78,7 +86,7 @@ class ExcelGUI:
                 self.tree.column(col, anchor="center", width=100, minwidth=100)
 
             # Insertar datos
-            for i, item in enumerate(data):
+            for i, item in enumerate(self.equipment_data):
                 tags = ('oddrow',) if i % 2 else ('evenrow',)
                 self.tree.insert("", "end", values=list(item.values()), tags=tags)
 
@@ -92,12 +100,66 @@ class ExcelGUI:
             for col in columns:
                 max_width = max(
                     default_font.measure(str(col)),
-                    max(default_font.measure(str(row[col])) for row in data)
+                    max(default_font.measure(str(row[col])) for row in self.equipment_data)
                 )
                 self.tree.column(col, width=min(max_width + 10, max_column_width))
 
             # Actualizar la vista
             self.master.update_idletasks()
+
+            # Habilitar el botón de obtener información
+            self.get_info_button['state'] = tk.NORMAL
+
+    def get_equipment_info(self):
+        if not self.equipment_data:
+            messagebox.showerror("Error", "No hay datos de equipos cargados.")
+            return
+
+        successful_connections = 0
+        failed_connections = 0
+        skipped_equipments = 0
+
+        for equipment in self.equipment_data:
+            ip = equipment.get('IP', '')
+            user = equipment.get('Usuario', '')
+            passU = equipment.get('Password', '')
+            if not ip:
+                print(f"Advertencia: El equipo {equipment.get('Nombre', 'Desconocido')} no tiene IP.")
+                skipped_equipments += 1
+                continue
+
+            api_port = equipment.get('Puerto API', '')
+            if not api_port:
+                print(f"Advertencia: El equipo {equipment.get('Nombre', 'Desconocido')} no tiene Puerto API especificado.")
+                skipped_equipments += 1
+                continue
+
+            try:
+                api_port = int(api_port)
+            except ValueError:
+                print(f"Error: Puerto API inválido para el equipo {equipment.get('Nombre', 'Desconocido')}: {api_port}")
+                skipped_equipments += 1
+                continue
+
+            print("****************************************")
+            router_manager = RouterManager(router_ip=ip, username=user, password=passU, port=api_port)
+            print(router_manager.get_router_info())
+            connection_status = router_manager.run()
+
+            if connection_status == "Conectado":
+                successful_connections += 1
+            else:
+                failed_connections += 1
+                print(f"Error: No se pudo conectar al equipo {equipment.get('Nombre', 'Desconocido')} con IP {ip}. Estado: {connection_status}")
+
+        # Mostrar un resumen al final del proceso
+        summary = f"Proceso completado:\n\n" \
+                  f"Equipos conectados exitosamente: {successful_connections}\n" \
+                  f"Equipos con fallos de conexión: {failed_connections}\n" \
+                  f"Equipos omitidos: {skipped_equipments}\n\n" \
+                  f"Total de equipos procesados: {len(self.equipment_data)}"
+        
+        messagebox.showinfo("Resumen del proceso", summary)
 
 if __name__ == "__main__":
     root = tk.Tk()
