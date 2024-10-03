@@ -1,8 +1,6 @@
 from librouteros import connect
 from librouteros.exceptions import TrapError
-from openpyxl import Workbook, load_workbook
-from openpyxl.utils import get_column_letter
-import os
+from ExcelReader import ExcelReader  # Añade esta línea al principio del archivo
 
 class RouterManager:
     def __init__(self, router_ip, username, password, port):
@@ -63,61 +61,13 @@ class RouterManager:
             self.connection_status = error_message
             return None
 
-    def save_router_info(self, info):
-        if info:
-            filename = "Network_Devices_List.xlsx"
-            try:
-                # Intentar cargar el archivo existente, si no existe, crear uno nuevo
-                if os.path.exists(filename):
-                    wb = load_workbook(filename)
-                    ws = wb.active
-                else:
-                    wb = Workbook()
-                    ws = wb.active
-                    ws.title = "Device Info"
-                    # Añadir encabezados si es un archivo nuevo
-                    headers = ["Nombre", "Modelo", "Número de Serie", "Versión Firmware", "IP Router","Conexion"]
-                    ws.append(headers)
-
-                # Añadir la nueva información
-                new_row = [
-                    info['nombre'],
-                    info['modelo'],
-                    info['numero_serie'],
-                    info['version_firmware'],
-                    info['ip_router'],
-                    info['connection_status']
-                ]
-                ws.append(new_row)
-
-                # Ajustar el ancho de las columnas
-                for col in ws.columns:
-                    max_length = 0
-                    column = col[0].column_letter
-                    for cell in col:
-                        try:
-                            if len(str(cell.value)) > max_length:
-                                max_length = len(cell.value)
-                        except:
-                            pass
-                    adjusted_width = (max_length + 2)
-                    ws.column_dimensions[column].width = adjusted_width
-
-                # Guardar el archivo
-                wb.save(filename)
-                print(f"Información guardada en {filename}")
-                self.connection_status = f"Información guardada en {filename}"
-            except Exception as e:
-                error_message = f"Error al guardar la información: {e}"
-                print(error_message)
-                self.connection_status = error_message
-
     def run(self):
         if self.connect_to_router():
             info = self.get_router_info()
             if info:
-                self.save_router_info(info)
-        return self.connection_status  # Devuelve el estado de la conexión
+                excel_reader = ExcelReader("Network_Devices_List.xlsx")
+                excel_reader.save_router_info(info)
+        return self.connection_status
 
 # Uso de la clase
 if __name__ == "__main__":

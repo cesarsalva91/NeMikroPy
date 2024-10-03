@@ -1,5 +1,8 @@
 import pandas as df
 from typing import List, Dict
+from openpyxl import Workbook, load_workbook
+from openpyxl.utils import get_column_letter
+import os
 
 class ExcelReader:
     def __init__(self, file_path: str):
@@ -32,6 +35,54 @@ class ExcelReader:
             print("\nEquipo:")
             for key, value in equipment.items():
                 print(f"  {key}: {value}")
+
+    def save_router_info(self, info: Dict[str, str]):
+        if info:
+            try:
+                # Intentar cargar el archivo existente, si no existe, crear uno nuevo
+                if os.path.exists(self.file_path):
+                    wb = load_workbook(self.file_path)
+                    ws = wb.active
+                else:
+                    wb = Workbook()
+                    ws = wb.active
+                    ws.title = "Device Info"
+                    # Añadir encabezados si es un archivo nuevo
+                    headers = ["Nombre", "Modelo", "Número de Serie", "Versión Firmware", "IP Router", "Conexion"]
+                    ws.append(headers)
+
+                # Añadir la nueva información
+                new_row = [
+                    info['nombre'],
+                    info['modelo'],
+                    info['numero_serie'],
+                    info['version_firmware'],
+                    info['ip_router'],
+                    info['connection_status']
+                ]
+                ws.append(new_row)
+
+                # Ajustar el ancho de las columnas
+                for col in ws.columns:
+                    max_length = 0
+                    column = col[0].column_letter
+                    for cell in col:
+                        try:
+                            if len(str(cell.value)) > max_length:
+                                max_length = len(cell.value)
+                        except:
+                            pass
+                    adjusted_width = (max_length + 2)
+                    ws.column_dimensions[column].width = adjusted_width
+
+                # Guardar el archivo
+                wb.save(self.file_path)
+                print(f"Información guardada en {self.file_path}")
+                return f"Información guardada en {self.file_path}"
+            except Exception as e:
+                error_message = f"Error al guardar la información: {e}"
+                print(error_message)
+                return error_message
 
 if __name__ == "__main__":
     # Ejemplo de uso
