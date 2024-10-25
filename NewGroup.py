@@ -2,10 +2,11 @@ from RouterManager import RouterManager
 from librouteros.exceptions import TrapError
 
 class NewGroup:
-    def __init__(self, router_manager: RouterManager):
+    def __init__(self, router_manager: RouterManager, skin: str = "default"):
         self.router_manager = router_manager
         self.group_name = ""
         self.attributes = {}
+        self.attributes["skin"] = skin  # Asignar el skin al atributo
 
     def set_group_name(self, name: str):
         """Establece el nombre del grupo."""
@@ -56,13 +57,13 @@ if __name__ == "__main__":
     password = "admin"
     port = 4444
 
-    router_manager = RouterManager(router_ip, username, password, port)
-    new_group = NewGroup(router_manager)
+    router_manager = RouterManager("192.168.240.135", "admin", "admin", "8728")
+    new_group = NewGroup(router_manager,skin="INGENIERIA")
 
     # Configurar el nuevo grupo
     new_group.set_group_name("nuevo_grupo")
     new_group.set_attribute("policy", "read,write,policy,test")
-    new_group.set_attribute("skin", "default")
+    #new_group.set_attribute("skin", "default")
 
     # Crear el grupo
     new_group.run()
