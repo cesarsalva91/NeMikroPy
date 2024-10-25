@@ -75,7 +75,7 @@ if __name__ == "__main__":
     router_ip = "192.168.240.134"  # Cambia esto por la IP de tu equipo MikroTik
     username = "admin"         # Cambia esto por tu usuario
     password = "admin"              # Cambia esto por tu contraseña
-    port = 4444                # Puerto API por defecto, cambia si es necesario
+    port = 8729                # Puerto API por defecto, cambia si es necesario
 
     # Crear instancia y ejecutar
     router_manager = RouterManager(router_ip, username, password, port)

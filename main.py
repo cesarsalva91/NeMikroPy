@@ -49,7 +49,7 @@ class Main:
         for equipment in self.equipment_data:
             router_ip = equipment['IP']
             username = equipment['Usuario']
-            password = equipment['Contraseña']
+            password = equipment['Pass']
             port = int(equipment['Puerto API'])
             name = equipment['Nombre del Equipo']
 
