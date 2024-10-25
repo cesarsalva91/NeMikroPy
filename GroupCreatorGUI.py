@@ -16,26 +16,27 @@ class GroupCreatorGUI:
 
     def create_widgets(self):
         # Campo para el nombre del grupo
-        ttk.Label(self.root, text="Nombre del Grupo:").pack(pady=5)
+        ttk.Label(self.root, text="Nombre del Grupo:").grid(row=0, column=0, pady=5)
         self.group_name_entry = ttk.Entry(self.root)
-        self.group_name_entry.pack(pady=5)
+        self.group_name_entry.grid(row=0, column=1, pady=5)
 
         # Checkboxes para los atributos
-        ttk.Label(self.root, text="Atributos:").pack(pady=5)
+        ttk.Label(self.root, text="Atributos:").grid(row=1, column=0, pady=5, columnspan=2)
         self.attributes = [
             "read", "write", "test", "web", "local", "telnet", "ssh", "ftp",
             "reboot", "policy", "winbox", "password", "sniff", "sensitive",
             "api", "romon", "dude", "tikapp"
         ]
         self.checkboxes = {}
-        for attr in self.attributes:
+        for index, attr in enumerate(self.attributes):
             var = tk.BooleanVar()
             cb = ttk.Checkbutton(self.root, text=attr, variable=var)
-            cb.pack(anchor='w', padx=20)
+            # Distribuir en dos columnas
+            cb.grid(row=(index // 2) + 2, column=index % 2, sticky='w', padx=20)
             self.checkboxes[attr] = var
 
         # Botón para crear el grupo
-        ttk.Button(self.root, text="Crear Grupo", command=self.create_group).pack(pady=20)
+        ttk.Button(self.root, text="Crear Grupo", command=self.create_group).grid(row=len(self.attributes) // 2 + 2, columnspan=2, pady=20)
 
     def create_group(self):
         group_name = self.group_name_entry.get()
@@ -68,6 +69,7 @@ if __name__ == "__main__":
     password = "admin"
     port = 4444
 
-    router_manager = RouterManager(router_ip, username, password, port)
+    router_manager = RouterManager("192.168.240.135", "admin", "admin", "8728")
     app = GroupCreatorGUI(router_manager)
     app.run()
+    
