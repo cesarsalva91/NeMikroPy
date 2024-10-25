@@ -72,7 +72,7 @@ class RouterManager:
 # Uso de la clase
 if __name__ == "__main__":
     # Parámetros de conexión
-    router_ip = "192.168.240.134"  # Cambia esto por la IP de tu equipo MikroTik
+    router_ip = "192.168.240.135"  # Cambia esto por la IP de tu equipo MikroTik
     username = "admin"         # Cambia esto por tu usuario
     password = "admin"              # Cambia esto por tu contraseña
     port = 8729                # Puerto API por defecto, cambia si es necesario
